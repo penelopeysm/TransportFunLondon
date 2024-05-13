@@ -82,6 +82,29 @@
 		return allowedModes;
 	}
 
+	function completelyWrongTimeCalculation(
+		start: Checkpoint,
+		end: Checkpoint,
+		mode: string
+	): number {
+		const speed = {
+			walk: 0.00089,
+			sprint: 0.00089 * 5,
+			limp: 0.00089 / 3,
+			victoria: 0.0049,
+			district: 0.0049,
+			h_and_c: 0.0049
+		};
+		const distance = Math.sqrt((start.lng - end.lng) ** 2 + (start.lat - end.lat) ** 2);
+		return distance / speed[mode];
+	}
+
+	function getTotalTime(journeyData: Path[]): number {
+		return journeyData.reduce((acc, journey) => {
+			return acc + completelyWrongTimeCalculation(journey.start, journey.end, journey.mode);
+		}, 0);
+	}
+
 	let gjPointsData: Feature<Point>[];
 	let gjPathsData: Feature<LineString>[];
 	let finished: boolean = false;
@@ -104,16 +127,18 @@
 		<h2>Your route so far</h2>
 		{startingPoint.name}
 		<ul class="poi-list">
-			{#each journeyData as journey, idx}
+			{#each journeyData as journey}
 				<li>
-					({idx + 1}) {journey.mode} -> {journey.end.name}
+					<span style="color: {modeToColor(journey.mode)}">{journey.mode}</span> to {journey.end
+						.name}
+					({completelyWrongTimeCalculation(journey.start, journey.end, journey.mode).toFixed(0)} minutes)
 				</li>
 			{/each}
 		</ul>
 
 		{#if finished}
 			<h2>Done!</h2>
-			<p>It took you ...</p>
+			<p>It took you {getTotalTime(journeyData).toFixed(0)} minutes.</p>
 			<button
 				on:click={() => {
 					journeyData = [];
@@ -192,6 +217,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
+		list-style-type: '↳ ';
+	}
+	.poi-list > li {
+		margin-left: 0;
 	}
 
 	.poi-name-map {

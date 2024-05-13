@@ -718,7 +718,7 @@ export function modeToColor(mode: string): string {
         return "#00a0df";
     } else if (mode === "district") {
         return "#007934";
-    } else if (mode === "handc") {
+    } else if (mode === "h_and_c") {
         return "#ec9bad";
     } else {
         console.error("Unknown mode: " + mode);
